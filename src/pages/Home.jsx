@@ -1,15 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getCommunities, getPosts } from '../services/api';
 import CreateCommunityModal from '../components/communities/CreateCommunityModal';
+import CommunityList from '../components/communities/CommunityList';
+import PostCard from '../components/posts/PostCard';
 
 const Home = () => {
-  const [count, setCount] = useState(0);
   const { logout, user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [communities, setCommunities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCommunities = async () => {
+    try {
+      const data = await getCommunities();
+      setCommunities(data);
+    } catch (error) {
+      console.error('Failed to fetch communities:', error);
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const data = await getPosts();
+      setPosts(data);
+    } catch (error) {
+      console.error('Failed to fetch posts:', error);
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([fetchCommunities(), fetchPosts()]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []); // Empty dependency array = run once on mount
 
   const handleCommunityCreated = () => {
     console.log('Community created successfully!');
-    // Later, we'll refresh the community list here
+    fetchCommunities(); // Refresh the list
   };
 
   return (
@@ -40,56 +73,37 @@ const Home = () => {
           </div>
         </div>
       </nav>
-
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="text-center">
-            <div className="flex justify-center space-x-4 mb-8">
-              <a
-                href="https://vite.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  src="/vite.svg"
-                  className="h-24 w-24 hover:drop-shadow-lg transition-all"
-                  alt="Vite logo"
-                />
-              </a>
-              <a
-                href="https://react.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  src="/src/assets/react.svg"
-                  className="h-24 w-24 hover:drop-shadow-lg transition-all"
-                  alt="React logo"
-                />
-              </a>
-            </div>
-            
-            <h2 className="text-4xl font-bold text-gray-900 mb-8">
-              Vite + React
-            </h2>
-            
-            <div className="bg-white rounded-lg shadow p-8 max-w-md mx-auto">
-              <button
-                onClick={() => setCount((count) => count + 1)}
-                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-4"
-              >
-                count is {count}
-              </button>
-              <p className="text-gray-600">
-                Edit <code className="bg-gray-100 px-2 py-1 rounded text-sm">src/pages/Home.jsx</code> and save to test HMR
-              </p>
-            </div>
-            
-            <p className="text-gray-500 mt-8">
-              Click on the Vite and React logos to learn more
-            </p>
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-xl text-gray-600">Loading...</div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column: Post Feed */}
+            <div className="lg:col-span-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Feed</h2>
+              {posts.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <p className="text-gray-600">
+                    No posts yet. Create a community and start posting!
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Community Sidebar */}
+            <div className="lg:col-span-1">
+              <CommunityList communities={communities} loading={false} />
+            </div>
+          </div>
+        )}
       </main>
       <CreateCommunityModal
         isOpen={isCreateModalOpen}
