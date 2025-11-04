@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import CreateCommunityModal from '../components/communities/CreateCommunityModal';
 
 const Home = () => {
   const [count, setCount] = useState(0);
   const { logout, user } = useAuth();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleCommunityCreated = () => {
+    console.log('Community created successfully!');
+    // Later, we'll refresh the community list here
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -17,6 +24,12 @@ const Home = () => {
               <span className="text-gray-700 mr-4">
                 Welcome, {user?.username || 'User'}!
               </span>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 mr-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Create Community
+              </button>
               <button
                 onClick={logout}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -78,6 +91,11 @@ const Home = () => {
           </div>
         </div>
       </main>
+      <CreateCommunityModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCommunityCreated}
+      />
     </div>
   );
 };

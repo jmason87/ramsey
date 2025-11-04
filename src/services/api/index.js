@@ -3,7 +3,7 @@ import { refreshToken } from './auth';
 
 export const API_BASE_URL = 'http://localhost:8000/api';
 
-const getHeaders = () => {
+export const getHeaders = () => {
   const token = Cookies.get('access_token');
   return {
     'Content-Type': 'application/json',
