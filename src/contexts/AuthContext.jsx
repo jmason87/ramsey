@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as apiLogin, register as apiRegister } from '../services/api';
-import { setTokens, removeTokens, isAuthenticated } from '../utils/auth';
+import { setTokens, removeTokens, isAuthenticated, decodeToken, getAccessToken } from '../utils/auth';
 
 const AuthContext = createContext(null);
 
@@ -20,7 +20,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated()) {
-      setUser({ authenticated: true });
+      const token = getAccessToken();
+      const decoded = decodeToken(token);
+      setUser({ 
+        authenticated: true,
+        id: decoded?.user_id,
+        username: decoded?.username
+      });
     }
     setLoading(false);
   }, []);
@@ -29,7 +35,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await apiLogin(username, password);
       setTokens(data.access, data.refresh);
-      setUser({ authenticated: true, username });
+      
+      const decoded = decodeToken(data.access);
+      setUser({ 
+        authenticated: true, 
+        username,
+        id: decoded?.user_id
+      });
+      
       navigate('/');
       return { success: true };
     } catch (error) {

@@ -15,7 +15,10 @@ export const apiCall = async (endpoint, options = {}) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      headers: getHeaders(),
+      headers: {
+        ...getHeaders(),
+        ...(options.headers || {}),
+      },
     });
 
     if (response.status === 401) {
@@ -24,11 +27,18 @@ export const apiCall = async (endpoint, options = {}) => {
       
       const retryResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
-        headers: getHeaders(),
+        headers: {
+          ...getHeaders(),
+          ...(options.headers || {}),
+        },
       });
 
       if (!retryResponse.ok) {
         throw new Error('Request failed after token refresh');
+      }
+
+      if (retryResponse.status === 204) {
+        return null;
       }
 
       return retryResponse.json();
@@ -36,6 +46,10 @@ export const apiCall = async (endpoint, options = {}) => {
 
     if (!response.ok) {
       throw new Error('Request failed');
+    }
+
+    if (response.status === 204) {
+      return null;
     }
 
     return response.json();

@@ -10,3 +10,16 @@ export const createCommunity = async (name, description) => {
     body: JSON.stringify({ name, description }),
   });
 };
+
+export const updateCommunity = async (id, name, description) => {
+  return apiCall(`/communities/${id}/`, {
+    method: 'PUT',
+    body: JSON.stringify({ name, description }),
+  });
+};
+
+export const deleteCommunity = async (id) => {
+  return apiCall(`/communities/${id}/`, {
+    method: 'DELETE',
+  });
+};

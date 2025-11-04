@@ -4,6 +4,7 @@ import { getCommunities, getPosts } from '../services/api';
 import CreateCommunityModal from '../components/communities/CreateCommunityModal';
 import CommunityList from '../components/communities/CommunityList';
 import PostCard from '../components/posts/PostCard';
+import EditCommunityModal from '../components/communities/EditCommunityModal';
 
 const Home = () => {
   const { logout, user } = useAuth();
@@ -11,6 +12,23 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [communityToEdit, setCommunityToEdit] = useState(null);
+
+  const handleEditCommunity = (community) => {
+    setCommunityToEdit(community);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCommunityUpdated = () => {
+    console.log('Community updated successfully!');
+    fetchCommunities();
+  };
+
+  const handleCommunityDeleted = () => {
+    console.log('Community deleted successfully!');
+    fetchCommunities();
+  };
 
   const fetchCommunities = async () => {
     try {
@@ -100,7 +118,13 @@ const Home = () => {
 
             {/* Right Column: Community Sidebar */}
             <div className="lg:col-span-1">
-              <CommunityList communities={communities} loading={false} />
+              <CommunityList 
+                communities={communities} 
+                loading={false}
+                onEdit={handleEditCommunity}
+                onDelete={handleCommunityDeleted}
+                currentUserId={user?.id}
+              />            
             </div>
           </div>
         )}
@@ -109,6 +133,12 @@ const Home = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleCommunityCreated}
+      />
+      <EditCommunityModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleCommunityUpdated}
+        community={communityToEdit}
       />
     </div>
   );
