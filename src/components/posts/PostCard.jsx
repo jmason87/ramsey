@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { deletePost } from '../../services/api';
+import { deletePost, votePost, removeVote } from '../../services/api';
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -16,6 +16,9 @@ const formatDate = (dateString) => {
 
 const PostCard = ({ post, onEdit, onDelete, currentUserId }) => {
   const [deleting, setDeleting] = useState(false);
+  const [voteCount, setVoteCount] = useState(post.vote_count || 0);
+  const [userVote, setUserVote] = useState(post.user_vote || null); // Will be 1, -1, or null
+  const [voting, setVoting] = useState(false);
 
   const contentPreview = post.content?.length > 200 
     ? post.content.substring(0, 200) + '...' 
@@ -35,6 +38,55 @@ const PostCard = ({ post, onEdit, onDelete, currentUserId }) => {
       alert('Failed to delete post');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleVote = async (voteValue) => {
+    if (voting) return; // Prevent double-clicks
+
+    // Optimistic update
+    const previousVote = userVote;
+    const previousCount = voteCount;
+
+    // Calculate new vote state
+    let newVote = null;
+    let newCount = voteCount;
+
+    if (previousVote === voteValue) {
+      // Clicking same vote = remove it
+      newVote = null;
+      newCount = voteCount - voteValue;
+    } else if (previousVote === null) {
+      // No previous vote = add new vote
+      newVote = voteValue;
+      newCount = voteCount + voteValue;
+    } else {
+      // Different vote = switch (delta is 2 or -2)
+      newVote = voteValue;
+      newCount = voteCount + (voteValue - previousVote);
+    }
+
+    // Apply optimistic update
+    setUserVote(newVote);
+    setVoteCount(newCount);
+    setVoting(true);
+
+    try {
+      if (newVote === null) {
+        // Remove vote
+        await removeVote(post.id);
+      } else {
+        // Add or update vote
+        await votePost(post.id, voteValue);
+      }
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      // Rollback on error
+      setUserVote(previousVote);
+      setVoteCount(previousCount);
+      alert('Failed to register vote');
+    } finally {
+      setVoting(false);
     }
   };
 
@@ -95,13 +147,39 @@ const PostCard = ({ post, onEdit, onDelete, currentUserId }) => {
       {/* Footer: Vote count, comments, post type */}
       <div className="flex items-center space-x-4 text-sm text-gray-600">
         <div className="flex items-center space-x-1">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-          </svg>
-          <span className="font-medium">{post.vote_count || 0}</span>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <button
+            onClick={() => handleVote(1)}
+            disabled={voting}
+            className={`transition-colors ${
+              userVote === 1 
+                ? 'text-orange-500' 
+                : 'text-gray-400 hover:text-orange-500'
+            } disabled:opacity-50`}
+            title="Upvote"
+          >
+            <svg className="w-5 h-5" fill={userVote === 1 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+          <span className={`font-medium ${
+            userVote === 1 ? 'text-orange-500' : userVote === -1 ? 'text-blue-500' : ''
+          }`}>
+            {voteCount}
+          </span>
+          <button
+            onClick={() => handleVote(-1)}
+            disabled={voting}
+            className={`transition-colors ${
+              userVote === -1 
+                ? 'text-blue-500' 
+                : 'text-gray-400 hover:text-blue-500'
+            } disabled:opacity-50`}
+            title="Downvote"
+          >
+            <svg className="w-5 h-5" fill={userVote === -1 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
 
         <div className="flex items-center space-x-1">
