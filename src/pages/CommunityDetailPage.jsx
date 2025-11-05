@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { getCommunities, getPosts, subscribeToCommunity, unsubscribeFromCommunity } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import PostCard from '../components/posts/PostCard';
