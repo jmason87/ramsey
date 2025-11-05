@@ -32,3 +32,16 @@ export const deletePost = async (postId) => {
     method: 'DELETE',
   });
 };
+
+export const votePost = async (postId, voteValue) => {
+  return apiCall(`/posts/${postId}/vote/`, {
+    method: 'POST',
+    body: JSON.stringify({ vote_value: voteValue }),
+  });
+};
+
+export const removeVote = async (postId) => {
+  return apiCall(`/posts/${postId}/vote/`, {
+    method: 'DELETE',
+  });
+};
