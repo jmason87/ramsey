@@ -5,6 +5,8 @@ import CreateCommunityModal from '../components/communities/CreateCommunityModal
 import CommunityList from '../components/communities/CommunityList';
 import PostCard from '../components/posts/PostCard';
 import EditCommunityModal from '../components/communities/EditCommunityModal';
+import CreatePostModal from '../components/posts/CreatePostModal';
+import EditPostModal from '../components/posts/EditPostModal';
 
 const Home = () => {
   const { logout, user } = useAuth();
@@ -14,6 +16,11 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [communityToEdit, setCommunityToEdit] = useState(null);
+  
+  // Post modal states
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+  const [isEditPostModalOpen, setIsEditPostModalOpen] = useState(false);
+  const [postToEdit, setPostToEdit] = useState(null);
 
   const handleEditCommunity = (community) => {
     setCommunityToEdit(community);
@@ -28,6 +35,26 @@ const Home = () => {
   const handleCommunityDeleted = () => {
     console.log('Community deleted successfully!');
     fetchCommunities();
+  };
+
+  const handleEditPost = (post) => {
+    setPostToEdit(post);
+    setIsEditPostModalOpen(true);
+  };
+
+  const handlePostCreated = () => {
+    console.log('Post created successfully!');
+    fetchPosts();
+  };
+
+  const handlePostUpdated = () => {
+    console.log('Post updated successfully!');
+    fetchPosts();
+  };
+
+  const handlePostDeleted = () => {
+    console.log('Post deleted successfully!');
+    fetchPosts();
   };
 
   const fetchCommunities = async () => {
@@ -76,6 +103,12 @@ const Home = () => {
                 Welcome, {user?.username || 'User'}!
               </span>
               <button
+                onClick={() => setIsCreatePostModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 mr-3 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Create Post
+              </button>
+              <button
                 onClick={() => setIsCreateModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 mr-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
@@ -110,7 +143,13 @@ const Home = () => {
               ) : (
                 <div>
                   {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard 
+                      key={post.id} 
+                      post={post}
+                      onEdit={handleEditPost}
+                      onDelete={handlePostDeleted}
+                      currentUserId={user?.id}
+                    />
                   ))}
                 </div>
               )}
@@ -139,6 +178,17 @@ const Home = () => {
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleCommunityUpdated}
         community={communityToEdit}
+      />
+      <CreatePostModal
+        isOpen={isCreatePostModalOpen}
+        onClose={() => setIsCreatePostModalOpen(false)}
+        onSuccess={handlePostCreated}
+      />
+      <EditPostModal
+        isOpen={isEditPostModalOpen}
+        onClose={() => setIsEditPostModalOpen(false)}
+        onSuccess={handlePostUpdated}
+        post={postToEdit}
       />
     </div>
   );
