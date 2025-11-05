@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { deleteCommunity } from '../../services/api';
 
 const CommunityList = ({ communities, loading, onEdit, onDelete, currentUserId }) => {
   const [deleting, setDeleting] = useState(null);
+
+  // Filter to only show subscribed communities
+  const subscribedCommunities = communities.filter(c => c.is_subscribed);
 
   const handleDelete = async (community) => {
     if (!window.confirm(`Are you sure you want to delete "${community.name}"?`)) {
@@ -30,42 +34,35 @@ const CommunityList = ({ communities, loading, onEdit, onDelete, currentUserId }
     );
   }
 
-  if (!communities || communities.length === 0) {
+  if (!subscribedCommunities || subscribedCommunities.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Communities</h2>
-        <p className="text-gray-600 text-sm">No communities yet. Be the first to create one!</p>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">My Communities</h2>
+        <p className="text-gray-600 text-sm">No subscriptions yet. Subscribe to communities to see them here!</p>
       </div>
     );
   }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Communities</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">My Communities</h2>
       <div className="space-y-3">
-        {communities.map((community) => {
-          // Debug logging with types
-          console.log('Community:', community.name, 
-            'Creator:', community.creator, typeof community.creator,
-            'CurrentUser:', currentUserId, typeof currentUserId,
-            'Match:', community.creator === currentUserId);
-          
-          return (
-            <div
-              key={community.id}
-              className="p-3 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1 cursor-pointer">
-                  <p className="font-medium text-gray-900">r/{community.name}</p>
-                  <p className="text-sm text-gray-600 truncate">{community.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {community.subscriber_count} members
-                  </p>
-                </div>
-                
-                {/* Show edit/delete only if user is creator */}
-                {Number(community.creator) === Number(currentUserId) && (
+        {subscribedCommunities.map((community) => (
+          <div
+            key={community.id}
+            className="p-3 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            <div className="flex justify-between items-start">
+              <Link to={`/communities/${community.id}`} className="flex-1">
+                <p className="font-medium text-gray-900 hover:text-indigo-600">r/{community.name}</p>
+                <p className="text-sm text-gray-600 truncate">{community.description}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {community.subscriber_count} members
+                </p>
+              </Link>
+              
+              {/* Show edit/delete only if user is creator */}
+              {Number(community.creator) === Number(currentUserId) && (
                 <div className="flex space-x-2 ml-2">
                   <button
                     onClick={() => onEdit(community)}
@@ -94,8 +91,7 @@ const CommunityList = ({ communities, loading, onEdit, onDelete, currentUserId }
               )}
             </div>
           </div>
-          );
-        })}
+        ))}
       </div>
     </div>
   );

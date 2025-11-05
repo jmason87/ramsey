@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { deletePost, votePost, removeVote } from '../../services/api';
 
 const formatDate = (dateString) => {
@@ -95,9 +96,12 @@ const PostCard = ({ post, onEdit, onDelete, currentUserId }) => {
       {/* Header: Community and timestamp */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center text-sm text-gray-600">
-          <span className="font-semibold text-indigo-600">
+          <Link
+            to={`/communities/${post.community?.id}`}
+            className="font-semibold text-indigo-600 hover:text-indigo-800"
+          >
             r/{post.community?.name || 'Unknown'}
-          </span>
+          </Link>
           <span className="mx-2">•</span>
           <span>Posted by u/{post.user?.username || 'Anonymous'}</span>
           <span className="mx-2">•</span>
@@ -135,9 +139,11 @@ const PostCard = ({ post, onEdit, onDelete, currentUserId }) => {
       </div>
 
       {/* Title */}
-      <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-indigo-600 cursor-pointer">
-        {post.title}
-      </h3>
+      <Link to={`/posts/${post.id}`}>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-indigo-600 cursor-pointer">
+          {post.title}
+        </h3>
+      </Link>
 
       {/* Content Preview */}
       <p className="text-gray-700 mb-4 whitespace-pre-line">

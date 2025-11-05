@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getCommunities, getPosts } from '../services/api';
 import CreateCommunityModal from '../components/communities/CreateCommunityModal';
@@ -10,6 +11,7 @@ import EditPostModal from '../components/posts/EditPostModal';
 
 const Home = () => {
   const { logout, user } = useAuth();
+  const location = useLocation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [posts, setPosts] = useState([]);
   const [communities, setCommunities] = useState([]);
@@ -85,6 +87,11 @@ const Home = () => {
     fetchData();
   }, []); // Empty dependency array = run once on mount
 
+  // Refetch posts when returning to Home page (location.key changes on navigation)
+  useEffect(() => {
+    fetchPosts();
+  }, [location.key]);
+
   const handleCommunityCreated = () => {
     console.log('Community created successfully!');
     fetchCommunities(); // Refresh the list
@@ -95,8 +102,16 @@ const Home = () => {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Ramsey App</h1>
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="text-xl font-bold text-gray-900 hover:text-indigo-600">
+                Ramsey App
+              </Link>
+              <Link
+                to="/communities"
+                className="text-gray-700 hover:text-indigo-600 font-medium"
+              >
+                Communities
+              </Link>
             </div>
             <div className="flex items-center">
               <span className="text-gray-700 mr-4">
@@ -134,23 +149,25 @@ const Home = () => {
             {/* Left Column: Post Feed */}
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Feed</h2>
-              {posts.length === 0 ? (
+              {posts.filter(post => post.community?.is_subscribed).length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <p className="text-gray-600">
-                    No posts yet. Create a community and start posting!
+                    No posts yet. Subscribe to communities to see their posts!
                   </p>
                 </div>
               ) : (
                 <div>
-                  {posts.map((post) => (
-                    <PostCard 
-                      key={post.id} 
-                      post={post}
-                      onEdit={handleEditPost}
-                      onDelete={handlePostDeleted}
-                      currentUserId={user?.id}
-                    />
-                  ))}
+                  {posts
+                    .filter(post => post.community?.is_subscribed)
+                    .map((post) => (
+                      <PostCard 
+                        key={post.id} 
+                        post={post}
+                        onEdit={handleEditPost}
+                        onDelete={handlePostDeleted}
+                        currentUserId={user?.id}
+                      />
+                    ))}
                 </div>
               )}
             </div>
