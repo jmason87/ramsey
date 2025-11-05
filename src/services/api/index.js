@@ -61,3 +61,5 @@ export const apiCall = async (endpoint, options = {}) => {
 export * from './auth';
 export * from './communities';
 export * from './posts';
+export * from './comments';
+export * from './users';

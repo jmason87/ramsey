@@ -4,6 +4,9 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CommunitiesPage from './pages/CommunitiesPage';
+import CommunityDetailPage from './pages/CommunityDetailPage';
+import PostDetailPage from './pages/PostDetailPage';
 import './App.css';
 
 function App() {
@@ -27,9 +30,32 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/communities"
+        element={
+          <ProtectedRoute>
+            <CommunitiesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/communities/:id"
+        element={
+          <ProtectedRoute>
+            <CommunityDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/posts/:id"
+        element={
+          <ProtectedRoute>
+            <PostDetailPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
 
 export default App;
-

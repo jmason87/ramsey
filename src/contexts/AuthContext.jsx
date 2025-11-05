@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, register as apiRegister } from '../services/api';
+import { login as apiLogin, register as apiRegister, getCurrentUser } from '../services/api';
 import { setTokens, removeTokens, isAuthenticated, decodeToken, getAccessToken } from '../utils/auth';
 
 const AuthContext = createContext(null);
@@ -19,16 +19,22 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      const token = getAccessToken();
-      const decoded = decodeToken(token);
-      setUser({ 
-        authenticated: true,
-        id: decoded?.user_id,
-        username: decoded?.username
-      });
-    }
-    setLoading(false);
+    const loadUser = async () => {
+      if (isAuthenticated()) {
+        try {
+          const userData = await getCurrentUser();
+          setUser({ 
+            ...userData,
+            authenticated: true
+          });
+        } catch (error) {
+          console.error('Failed to load user:', error);
+          removeTokens();
+        }
+      }
+      setLoading(false);
+    };
+    loadUser();
   }, []);
 
   const login = async (username, password) => {
@@ -36,11 +42,11 @@ export const AuthProvider = ({ children }) => {
       const data = await apiLogin(username, password);
       setTokens(data.access, data.refresh);
       
-      const decoded = decodeToken(data.access);
+      // Fetch user details
+      const userData = await getCurrentUser();
       setUser({ 
-        authenticated: true, 
-        username,
-        id: decoded?.user_id
+        ...userData,
+        authenticated: true
       });
       
       navigate('/');

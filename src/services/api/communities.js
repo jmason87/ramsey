@@ -23,3 +23,15 @@ export const deleteCommunity = async (id) => {
     method: 'DELETE',
   });
 };
+
+export const subscribeToCommunity = async (id) => {
+  return apiCall(`/communities/${id}/subscribe/`, {
+    method: 'POST',
+  });
+};
+
+export const unsubscribeFromCommunity = async (id) => {
+  return apiCall(`/communities/${id}/unsubscribe/`, {
+    method: 'DELETE',
+  });
+};
