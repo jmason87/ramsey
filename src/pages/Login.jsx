@@ -31,13 +31,7 @@ const Login = () => {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              create a new account
-            </Link>
+            Contact the site owner for an account.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

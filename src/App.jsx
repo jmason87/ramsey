@@ -3,7 +3,6 @@ import { useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityDetailPage from './pages/CommunityDetailPage';
 import PostDetailPage from './pages/PostDetailPage';
@@ -18,10 +17,7 @@ function App() {
         path="/login"
         element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
       />
-      <Route
-        path="/register"
-        element={isAuthenticated ? <Navigate to="/" replace /> : <Register />}
-      />
+      {/* Registration route removed from UI to prevent public signups */}
       <Route
         path="/"
         element={
