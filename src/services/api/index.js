@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import { refreshToken } from './auth';
 
-export const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export const getHeaders = () => {
   const token = Cookies.get('access_token');
